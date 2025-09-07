@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>923 Countdown</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .number {
+            font-size: 100px;
+            font-weight: bold;
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.7);
+            z-index: 10;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .countdown {
+            font-size: 24px;
+            margin-top: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+        .countdown span {
+            display: inline-block;
+            margin: 0 10px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .cross {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 30px;
+            height: 50px;
+            z-index: 10;
+            cursor: pointer;
+        }
+        .cross::before,
+        .cross::after {
+            content: '';
+            position: absolute;
+            background-color: #ffffff;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .cross::before {
+            width: 10px;
+            height: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .cross::after {
+            width: 30px;
+            height: 10px;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="lightBeams"></canvas>
+    <a href="three-sixteen.html" class="number">923</a>
+    <div class="countdown" id="countdown">
+        <span id="days">0</span> Days
+        <span id="hours">0</span> Hours
+        <span id="minutes">0</span> Minutes
+        <span id="seconds">0</span> Seconds
+    </div>
+    <a href="https://youtu.be/PIpvIVLQ2Dk?si=tL9-moi6UsiCiAs-" target="_blank" class="cross"></a>
+
+    <script>
+        // Countdown to September 23, 2025
+        const targetDate = new Date("September 23, 2025 00:00:00").getTime();
+        const countdown = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById("days").textContent = days;
+            document.getElementById("hours").textContent = hours;
+            document.getElementById("minutes").textContent = minutes;
+            document.getElementById("seconds").textContent = seconds;
+            if (distance < 0) {
+                clearInterval(countdown);
+                document.getElementById("countdown").innerHTML = "Date has passed!";
+            }
+        }, 1000);
+
+        // Light beams animation
+        const canvas = document.getElementById('lightBeams');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const beams = [];
+        class Beam {
+            constructor() {
+                this.width = Math.random() * 20 + 10;
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.speed = Math.random() * 2 + 1;
+                this.opacity = 0.5;
+                this.flash = false;
+                this.flashDuration = 10;
+                this.flashCounter = 0;
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y <= 0) {
+                    this.flash = true;
+                    this.y = 0;
+                }
+                if (this.flash) {
+                    this.flashCounter++;
+                    if (this.flashCounter > this.flashDuration) {
+                        this.y = canvas.height;
+                        this.x = Math.random() * canvas.width;
+                        this.flash = false;
+                        this.flashCounter = 0;
+                        this.opacity = 0.5;
+                    }
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + 50);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.lineWidth = this.width;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                ctx.stroke();
+                if (this.flash) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${1 - this.flashCounter / this.flashDuration})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        for (let i = 0; i < 5; i++) {
+            beams.push(new Beam());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            beams.forEach(beam => {
+                beam.update();
+                beam.draw();
+            });
+            if (Math.random() < 0.02) {
+                beams.push(new Beam());
+            }
+            if (beams.length > 10) {
+                beams.shift();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
