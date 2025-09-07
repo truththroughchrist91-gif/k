@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3:16</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .number {
+            font-size: 100px;
+            font-weight: bold;
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.7);
+            z-index: 10;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .verse {
+            font-size: 20px;
+            max-width: 600px;
+            text-align: center;
+            margin-top: 20px;
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            z-index: 10;
+            line-height: 1.4;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .cross {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 30px;
+            height: 50px;
+            z-index: 10;
+            cursor: pointer;
+        }
+        .cross::before,
+        .cross::after {
+            content: '';
+            position: absolute;
+            background-color: #ffffff;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .cross::before {
+            width: 10px;
+            height: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .cross::after {
+            width: 30px;
+            height: 10px;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="lightBeams"></canvas>
+    <a href="game.html" class="number">3:16</a>
+    <div class="verse">
+        For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.
+    </div>
+    <a href="https://youtu.be/PIpvIVLQ2Dk?si=tL9-moi6UsiCiAs-" target="_blank" class="cross"></a>
+
+    <script>
+        // Light beams animation
+        const canvas = document.getElementById('lightBeams');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const beams = [];
+        class Beam {
+            constructor() {
+                this.width = Math.random() * 20 + 10;
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.speed = Math.random() * 2 + 1;
+                this.opacity = 0.5;
+                this.flash = false;
+                this.flashDuration = 10;
+                this.flashCounter = 0;
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y <= 0) {
+                    this.flash = true;
+                    this.y = 0;
+                }
+                if (this.flash) {
+                    this.flashCounter++;
+                    if (this.flashCounter > this.flashDuration) {
+                        this.y = canvas.height;
+                        this.x = Math.random() * canvas.width;
+                        this.flash = false;
+                        this.flashCounter = 0;
+                        this.opacity = 0.5;
+                    }
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + 50);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.lineWidth = this.width;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                ctx.stroke();
+                if (this.flash) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${1 - this.flashCounter / this.flashDuration})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        for (let i = 0; i < 5; i++) {
+            beams.push(new Beam());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            beams.forEach(beam => {
+                beam.update();
+                beam.draw();
+            });
+            if (Math.random() < 0.02) {
+                beams.push(new Beam());
+            }
+            if (beams.length > 10) {
+                beams.shift();
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
